@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solitude in Scale - Photo Evaluation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Apple SD Gothic Neo', Arial, sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .header {
+            border-bottom: 1px solid #e5e5e5;
+            padding: 30px 40px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: -0.3px;
+            color: #1a1a1a;
+        }
+        
+        .hero {
+            padding: 80px 40px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+        
+        .hero p {
+            font-size: 16px;
+            color: #666;
+            font-weight: 300;
+            letter-spacing: -0.3px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px 100px;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        
+        .api-input-wrapper {
+            margin-bottom: 60px;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 16px 0;
+            border: none;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 15px;
+            font-family: monospace;
+            background: transparent;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="password"]:focus {
+            outline: none;
+            border-bottom-color: #1a1a1a;
+        }
+        
+        input[type="password"]::placeholder {
+            color: #ccc;
+        }
+        
+        .upload-area {
+            border: 1px solid #e5e5e5;
+            padding: 100px 40px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 40px;
+        }
+        
+        .upload-area:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+        
+        .upload-area.dragover {
+            background: #f0f0f0;
+            border-color: #1a1a1a;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .upload-text {
+            font-size: 15px;
+            color: #666;
+            font-weight: 300;
+            letter-spacing: -0.3px;
+        }
+        
+        .photo-preview {
+            max-width: 100%;
+            max-height: 500px;
+            margin: 40px 0;
+            display: none;
+            object-fit: contain;
+        }
+        
+        .photo-preview.show {
+            display: block;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #333;
+        }
+        
+        .btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #1a1a1a;
+            border: 1px solid #1a1a1a;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #e5e5e5;
+            border-top: 2px solid #1a1a1a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: #999;
+            font-weight: 300;
+            letter-spacing: -0.3px;
+        }
+        
+        .results {
+            border-top: 1px solid #e5e5e5;
+            padding-top: 60px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .rating-section {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .stars {
+            font-size: 36px;
+            margin: 20px 0;
+            letter-spacing: 4px;
+        }
+        
+        .rating-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .verdict-box {
+            background: #fafafa;
+            padding: 30px;
+            margin: 40px 0;
+            border-left: 2px solid #1a1a1a;
+        }
+        
+        .verdict-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .verdict-text {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+        }
+        
+        .analysis-box {
+            margin: 40px 0;
+        }
+        
+        .analysis-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        
+        .analysis-text {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.8;
+            font-weight: 300;
+            letter-spacing: -0.3px;
+            white-space: pre-wrap;
+        }
+        
+        .footer {
+            border-top: 1px solid #e5e5e5;
+            padding: 40px;
+            margin-top: 80px;
+        }
+        
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .instruction-title {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        
+        .instruction-list {
+            list-style: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: -0.3px;
+        }
+        
+        .instruction-list li {
+            margin: 12px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .instruction-list li:before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: #ccc;
+        }
+        
+        .instruction-list a {
+            color: #1a1a1a;
+            text-decoration: none;
+            border-bottom: 1px solid #e5e5e5;
+            transition: border-color 0.3s;
+        }
+        
+        .instruction-list a:hover {
+            border-bottom-color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Solitude in Scale — Photo Evaluation Tool</div>
+    </div>
+    
+    <div class="hero">
+        <h1>당신의 이야기가 우리의 이야기입니다</h1>
+        <p>Always close to your story.</p>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <div class="section-title">API Key</div>
+            <div class="api-input-wrapper">
+                <input 
+                    type="password" 
+                    id="apiKey" 
+                    placeholder="Enter your Anthropic API key (sk-ant-...)"
+                >
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Upload Photo</div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Click or drag your photo here</div>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+            
+            <img id="preview" class="photo-preview">
+            
+            <button class="btn" id="analyzeBtn" disabled>Evaluate Photo</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">Claude is analyzing your photograph...</p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="rating-section">
+                <div class="rating-label">Rating</div>
+                <div class="stars" id="stars"></div>
+            </div>
+            
+            <div class="verdict-box">
+                <div class="verdict-label">Verdict</div>
+                <div class="verdict-text" id="verdict"></div>
+            </div>
+            
+            <div class="analysis-box">
+                <div class="analysis-label">Analysis</div>
+                <div class="analysis-text" id="analysis"></div>
+            </div>
+            
+            <button class="btn btn-secondary" id="clearBtn">Evaluate Another Photo</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="footer-content">
+            <div class="instruction-title">How to Use</div>
+            <ul class="instruction-list">
+                <li>Get your API key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></li>
+                <li>Enter the API key in the field above</li>
+                <li>Upload or drag a photo from your project</li>
+                <li>Click "Evaluate Photo" and wait for Claude's analysis</li>
+                <li>Review the rating and decide where to use the photo</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const apiKeyInput = document.getElementById('apiKey');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const starsDiv = document.getElementById('stars');
+        const verdictDiv = document.getElementById('verdict');
+        const analysisDiv = document.getElementById('analysis');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        let currentImage = null;
+        
+        function checkInputs() {
+            analyzeBtn.disabled = !(apiKeyInput.value && currentImage);
+        }
+        
+        apiKeyInput.addEventListener('input', checkInputs);
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFile(file);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+        
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = e.target.result;
+                preview.src = currentImage;
+                preview.classList.add('show');
+                results.classList.remove('show');
+                checkInputs();
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        analyzeBtn.addEventListener('click', async () => {
+            if (!apiKeyInput.value || !currentImage) return;
+            
+            analyzeBtn.disabled = true;
+            loading.classList.add('show');
+            results.classList.remove('show');
+            
+            try {
+                const base64Image = currentImage.split(',')[1];
+                const mediaType = currentImage.split(';')[0].split(':')[1];
+                
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKeyInput.value,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: mediaType,
+                                        data: base64Image
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: `Evaluate this photo for my "Solitude in Scale" photography project. 
+
+Project concept: Encountering solitary trees or rocks in vast landscapes - moments of intimate recognition with beings standing alone in nature.
+
+Key criteria:
+- One clear solitary subject (tree or rock)
+- Subject shows character/weathering/persistence
+- Vast landscape provides scale and context
+- Clean, focused composition
+- Good light that reveals the subject
+- Captures feeling of "greeting a fellow solitary being"
+
+Provide:
+1. Star rating (1-5)
+2. Brief verdict (Include in project / Consider / Personal account only / Set aside)
+3. Short analysis (2-3 sentences on strengths and concerns)
+
+Format your response exactly like this:
+RATING: [1-5 stars]
+VERDICT: [verdict]
+ANALYSIS: [your analysis]`
+                                }
+                            ]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+                
+                const text = data.content[0].text;
+                
+                const ratingMatch = text.match(/RATING:\s*(\d)/);
+                const verdictMatch = text.match(/VERDICT:\s*(.+?)(?=\n|$)/);
+                const analysisMatch = text.match(/ANALYSIS:\s*([\s\S]+)/);
+                
+                const rating = ratingMatch ? parseInt(ratingMatch[1]) : 0;
+                const verdict = verdictMatch ? verdictMatch[1].trim() : 'No verdict';
+                const analysis = analysisMatch ? analysisMatch[1].trim() : text;
+                
+                starsDiv.textContent = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+                verdictDiv.textContent = verdict;
+                analysisDiv.textContent = analysis;
+                
+                loading.classList.remove('show');
+                results.classList.add('show');
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                alert('Error: ' + error.message + '\n\nPlease check your API key.');
+                analyzeBtn.disabled = false;
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            currentImage = null;
+            preview.classList.remove('show');
+            results.classList.remove('show');
+            fileInput.value = '';
+            checkInputs();
+        });
+    </script>
+</body>
+</html>
