@@ -341,8 +341,8 @@
     </div>
     
     <div class="hero">
-        <h1>Wood and rock </h1>
-        <p>A photograyhy project.</p>
+        <h1>Wood and Rock</h1>
+        <p>Photography project.</p>
     </div>
     
     <div class="container">
@@ -354,6 +354,13 @@
                     id="apiKey" 
                     placeholder="Enter your Anthropic API key (sk-ant-...)"
                 >
+                <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 13px; color: #666; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="saveKey" style="cursor: pointer;">
+                        Remember my API key on this computer
+                    </label>
+                    <button id="clearKey" style="font-size: 12px; color: #999; background: none; border: none; cursor: pointer; text-decoration: underline; display: none;">Clear saved key</button>
+                </div>
             </div>
         </div>
         
@@ -410,6 +417,8 @@
 
     <script>
         const apiKeyInput = document.getElementById('apiKey');
+        const saveKeyCheckbox = document.getElementById('saveKey');
+        const clearKeyBtn = document.getElementById('clearKey');
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
@@ -423,11 +432,49 @@
         
         let currentImage = null;
         
+        // Load saved API key on page load
+        window.addEventListener('load', () => {
+            const savedKey = localStorage.getItem('anthropic_api_key');
+            if (savedKey) {
+                apiKeyInput.value = savedKey;
+                saveKeyCheckbox.checked = true;
+                clearKeyBtn.style.display = 'inline';
+                checkInputs();
+            }
+        });
+        
+        // Save/remove API key when checkbox changes
+        saveKeyCheckbox.addEventListener('change', () => {
+            if (saveKeyCheckbox.checked && apiKeyInput.value) {
+                localStorage.setItem('anthropic_api_key', apiKeyInput.value);
+                clearKeyBtn.style.display = 'inline';
+            } else {
+                localStorage.removeItem('anthropic_api_key');
+                clearKeyBtn.style.display = 'none';
+            }
+        });
+        
+        // Save key when typed (if checkbox is checked)
+        apiKeyInput.addEventListener('input', () => {
+            if (saveKeyCheckbox.checked && apiKeyInput.value) {
+                localStorage.setItem('anthropic_api_key', apiKeyInput.value);
+                clearKeyBtn.style.display = 'inline';
+            }
+            checkInputs();
+        });
+        
+        // Clear saved key button
+        clearKeyBtn.addEventListener('click', () => {
+            localStorage.removeItem('anthropic_api_key');
+            apiKeyInput.value = '';
+            saveKeyCheckbox.checked = false;
+            clearKeyBtn.style.display = 'none';
+            checkInputs();
+        });
+        
         function checkInputs() {
             analyzeBtn.disabled = !(apiKeyInput.value && currentImage);
         }
-        
-        apiKeyInput.addEventListener('input', checkInputs);
         
         uploadArea.addEventListener('click', () => fileInput.click());
         
